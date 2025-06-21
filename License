@@ -1,0 +1,16 @@
+﻿
+---
+
+### ✅ What to Do Next
+
+1. Create the `README.md` file in your project’s root folder with the above content.
+2. Create the folder `assets/screens/` and add your screenshots:
+   - `login.png`
+   - `task-list.png`
+   - `calendar.png`
+3. Commit and push to GitHub:
+
+```bash
+git add README.md assets/screens/
+git commit -m "Add English README and screenshots"
+git push

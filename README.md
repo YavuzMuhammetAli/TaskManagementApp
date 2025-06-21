@@ -11,7 +11,7 @@ Built with **Blazor Server** and **DevExpress XAF**, it offers a modern and exte
 |------------|-----------|------------------|
 | ![Login](wwroot/images/1.png) | ![List](wwroot/images/task-list.png) | ![Calendar](wwroot/images/calendar.png) |
 
-> 📝 Make sure to add your screenshots to the `assets/screens` folder.
+> 📝 Make sure to add your screenshots to the `wwroot/images` folder.
 
 ---
 

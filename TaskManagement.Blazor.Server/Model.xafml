@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application>
+  <NavigationItems NavigationStyle="TreeList">
+    <Items>
+      <Item Id="@ba719736-d5e9-4dab-b6f5-c4b850245c10" ViewId="PermissionPolicyRole_ListView" IsNewNode="True" />
+      <Item Id="Appointment" ViewId="Appointment_ListView" ImageName="BO_Note" IsNewNode="True" />
+      <Item Id="Default" Visible="True">
+        <Items>
+          <Item Id="Appointment_ListView" ImageName="BO_Note" />
+          <Item Id="EmailLog_ListView" ImageName="BO_Document" />
+          <Item Id="Project_ListView" ImageName="BO_Task" />
+          <Item Id="Task_ListView" ImageName="BO_Task" />
+        </Items>
+      </Item>
+      <Item Id="Email Log" ViewId="EmailLog_ListView" IsNewNode="True" />
+      <Item Id="Project" ViewId="Project_ListView" ImageName="Action_Document_Object_Inplace" IsNewNode="True" />
+      <Item Id="Reports" Visible="True" />
+      <Item Id="Scheduler Event" ViewId="Event_ListView" IsNewNode="True" />
+      <Item Id="State Machine" Visible="True" />
+      <Item Id="Task" ViewId="Task_ListView" ImageName="BO_Task" IsNewNode="True" />
+      <Item Id="Users" ViewId="ApplicationUser_ListView" ObjectKey="@CurrentUserID" Caption="My Details" IsNewNode="True" />
+    </Items>
+  </NavigationItems>
+  <Options UIType="SingleWindowSDI" RestoreTabbedMdiLayout="True" ShowTabImage="True" DataAccessMode="Server" />
+  <SchemaModules>
+    <SchemaModule Name="CloneObjectModule" Version="24.2.7.0" IsNewNode="True" />
+    <SchemaModule Name="SchedulerBlazorModule" Version="24.2.7.0" IsNewNode="True" />
+    <SchemaModule Name="SchedulerModuleBase" Version="24.2.7.0" IsNewNode="True" />
+    <SchemaModule Name="SystemModule" Version="24.2.7.0" IsNewNode="True" />
+  </SchemaModules>
+  <Views>
+    <ListView Id="PendingTask_ListView" DataAccessMode="Client" />
+  </Views>
+</Application>

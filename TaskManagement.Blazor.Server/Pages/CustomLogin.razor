@@ -1,0 +1,232 @@
+﻿@page "/CustomLoginPage"
+@using DevExpress.Data.Filtering
+@using DevExpress.ExpressApp
+@using DevExpress.ExpressApp.Blazor.Services
+@using DevExpress.ExpressApp.Security
+@using Microsoft.AspNetCore.Components.Web
+@using TaskManagement.Module.BaseClassess
+@using TaskManagement.Module.BusinessObjects
+@using TaskManagement.Core.Concrete.Models;
+@inject NavigationManager Navigation
+@inject IXafApplicationProvider ApplicationProvider
+@inject IObjectSpaceFactory ObjectSpaceFactory
+@inject INonSecuredObjectSpaceFactory NonSecuredObjectSpaceFactory
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpClientFactory
+
+<body>
+    <div class="container-fluid d-flex justify-content-center align-items-center vh-100">
+        <div class="row w-75 align-items-center">
+            <!-- Sol Taraf: Logo -->
+            <div class="col-lg-6 d-flex justify-content-center">
+                <img src="images/logo1.png" class="logo-img" />
+            </div>
+
+            <!-- Sağ Taraf: Login ve Kayıt -->
+            <div class="col-lg-6 d-flex justify-content-center">
+                @if (!showRegister)
+                {
+                    <div class="login-wrap p-4">
+                        <EditForm Model="loginModel" OnValidSubmit="Lgn">
+                            <div class="form-group mb-3">
+                                <InputText class="form-control" @bind-Value="loginModel.UserName" placeholder="Kullanıcı Adı" />
+                            </div>
+                            <div class="form-group mb-3">
+                                <InputText class="form-control" @bind-Value="loginModel.Password" placeholder="Şifre" type="password" @onkeypress="KeyUp" />
+                            </div>
+                            <div class="form-group d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Oturum Aç</button>
+                                <button type="button" class="btn btn-secondary mt-2" @onclick="ToggleRegisterPanel">Yeni Kullanıcı Oluştur</button>
+                            </div>
+                        </EditForm>
+
+                        @if (!string.IsNullOrEmpty(errorText))
+                        {
+                            <div class="alert alert-danger mt-3">@errorText</div>
+                        }
+                        @if (showVerification && !string.IsNullOrEmpty(verificationMessage))
+                        {
+                            <div class="alert alert-success">@verificationMessage</div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="register-wrap p-4">
+                        <h5>Yeni Kullanıcı Oluştur</h5>
+                        <EditForm Model="registerModel" OnValidSubmit="RegisterUser">
+                            <div class="form-group mb-3">
+                                <InputText class="form-control" @bind-Value="registerModel.UserName" placeholder="Kullanıcı Adı" />
+                            </div>
+                            <div class="form-group mb-3">
+                                <InputText class="form-control" @bind-Value="registerModel.Email" placeholder="E-posta" type="email" />
+                            </div>
+                            <div class="form-group mb-3">
+                                <InputText class="form-control" @bind-Value="registerModel.Password" placeholder="Şifre" type="password" />
+                            </div>
+                            <div class="form-group mb-3">
+                                <InputText class="form-control" @bind-Value="registerModel.ConfirmPassword" placeholder="Şifre (Tekrar)" type="password" />
+                            </div>
+
+                            <div class="form-group d-grid gap-2">
+                                <button type="submit" class="btn btn-success">Kaydol</button>
+                                <button type="button" class="btn btn-link mt-2" @onclick="ToggleRegisterPanel">Geri Dön</button>
+                            </div>
+                        </EditForm>
+
+                        @if (!string.IsNullOrEmpty(registerMessage))
+                        {
+                            <div class="alert alert-info mt-3">@registerMessage</div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</body>
+
+<style>
+    body, html {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-image: url('/images/1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    .container-fluid {
+        height: 100%;
+    }
+
+    .logo-img {
+        width: 300px;
+        height: auto;
+    }
+
+    .login-wrap, .register-wrap, .verification-wrap {
+        width: 100%;
+        max-width: 400px;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+</style>
+
+@code {
+    private string? errorText;
+
+    private bool showRegister = false;
+    private bool showVerification = false;
+
+    private string? registerMessage;
+    private string? verificationMessage;
+
+    private string? currentVerificationCode;
+    private ApplicationUser? pendingUser;
+
+    private LoginModel loginModel = new();
+    private RegisterModel registerModel = new();
+
+    private void ToggleRegisterPanel()
+    {
+        showRegister = !showRegister;
+        registerMessage = null;
+        errorText = null;
+        verificationMessage = null;
+        showVerification = false;
+    }
+
+    private void KeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            _ = Lgn();
+        }
+    }
+
+    private async System.Threading.Tasks.Task Lgn()
+    {
+        errorText = null;
+        var app = ApplicationProvider.GetApplication();
+        var logonParams = (AuthenticationStandardLogonParameters)app.Security.LogonParameters;
+        logonParams.UserName = loginModel.UserName;
+        logonParams.Password = loginModel.Password;
+
+        try
+        {
+            app.Logon();
+
+        }
+        catch (Exception ex)
+        {
+            errorText = ex.Message;
+        }
+    }
+
+    private async System.Threading.Tasks.Task RegisterUser()
+    {
+        registerMessage = null;
+
+        if (string.IsNullOrWhiteSpace(registerModel.UserName) || string.IsNullOrWhiteSpace(registerModel.Password) || string.IsNullOrWhiteSpace(registerModel.Email))
+        {
+            registerMessage = "Kullanıcı adı, şifre ve e-posta boş olamaz.";
+            return;
+        }
+        if (registerModel.Password != registerModel.ConfirmPassword)
+        {
+            registerMessage = "Şifreler eşleşmiyor.";
+            return;
+        }
+
+        using var objectSpace = NonSecuredObjectSpaceFactory.CreateNonSecuredObjectSpace<ApplicationUser>();
+        var existingUser = objectSpace.FirstOrDefault<ApplicationUser>(u => u.UserName == registerModel.UserName);
+        if (existingUser != null)
+        {
+            registerMessage = "Bu kullanıcı adı veya e-posta zaten mevcut.";
+            return;
+        }
+
+        var user = objectSpace.CreateObject<ApplicationUser>();
+        user.UserName = registerModel.UserName;
+        user.Email = registerModel.Email;
+        user.SetPassword(registerModel.Password);
+        user.Roles.Add(objectSpace.FirstOrDefault<DevExpress.Persistent.BaseImpl.PermissionPolicy.PermissionPolicyRole>(role => role.Name == "Default"));
+        user.IsActive = true;
+        user.EmailVerification = false;
+        ((ISecurityUserWithLoginInfo)user).CreateUserLoginInfo(SecurityDefaults.PasswordAuthentication, objectSpace.GetKeyValueAsString(user));
+
+        // Rastgele 6 haneli doğrulama kodu
+        currentVerificationCode = new Random().Next(100000, 999999).ToString();
+
+        user.VerificationCode = currentVerificationCode;
+        objectSpace.CommitChanges();
+
+        var httpClient = HttpClientFactory.CreateClient();
+        var mailTemplate = objectSpace.FindObject<MailMessageTemplate>(CriteriaOperator.Parse("TemplateName = 'NewAccount'"));
+        var emailModel = new EmailModel()
+        {
+            Email = registerModel.Email,
+            VerificationCode = currentVerificationCode,
+            UserName = user.UserName,
+            Subject = mailTemplate != null ? mailTemplate.Subject : "Best Of The Year Hesap Doğrulama",
+            Body = mailTemplate != null ? mailTemplate.Body : "Doğrulama Kodu: $VerificationCode"
+        };
+
+        _ = httpClient.PostAsJsonAsync("http://bestoftheyear.com.tr/api/MailMessage/sendMail", emailModel);
+
+        pendingUser = user;
+        showVerification = true;
+        showRegister = false;
+        verificationMessage = "Kayıt başarılı! Lütfen giriş yapın.";
+
+    }
+}

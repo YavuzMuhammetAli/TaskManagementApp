@@ -26,8 +26,8 @@ namespace TaskManagement.Blazor.Server.API.MailMessage
         {
             string smtpServer = "smtp.gmail.com";
             int smtpPort = 587;
-            string smtpUser = "bestofyearinformation@gmail.com";
-            string smtpPassword = "ucof opun lahx abqy";
+            string smtpUser = "Examplr@gmail.com";
+            string smtpPassword = "";
             string fromEmail = smtpUser;
             using var uow = new UnitOfWork(_dataLayer);
 
